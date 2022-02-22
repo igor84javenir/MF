@@ -48,10 +48,26 @@ public class ExcelParser {
             String cellAsString = "";
 
             for (Cell cell : row) {
+                System.out.println("Cell is : " + cell.getAddress());
+
                 addCellToRDV(rdv, cell, cellAsString, df);
             }
 
-//            if (rdv.getFirstName() == null || rdv.getFirstName().isEmpty())
+            if ((rdv.getLastName() == null || rdv.getLastName().isBlank())
+                    && (rdv.getFirstName() == null || rdv.getFirstName().isBlank())
+                    && rdv.getPhoneNumber() == null
+                    && (rdv.getMail() == null || rdv.getMail().isBlank())
+                    && rdv.getLetterSentDate() == null
+                    && rdv.getRDVDate() == null
+                    && rdv.getRDVTime() == null
+                    && rdv.getRDVLocation() == null
+                    && rdv.getReferentName() == null
+                    && rdv.getRDVType() == null) {
+                break;
+            }
+
+            if (rdv.getLastName() == null
+                || )
 
             rdvs.add(rdv);
         }
