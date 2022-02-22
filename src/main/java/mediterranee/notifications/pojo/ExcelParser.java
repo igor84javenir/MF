@@ -9,8 +9,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static mediterranee.notifications.controller.MainController.WORKING_DIR;
 
@@ -22,9 +26,10 @@ public class ExcelParser {
         List<Workbook> workbooks = generateWorkbooksFromFiles(files);
         List<Sheet> sheets = getSheetsFromWorkbooks(workbooks);
         List<Row> rows = getRowsFromSheets(sheets);
-        List<RDV> rdvs = getRDVs(rows);
 
-        System.out.println(rdvs);
+        System.out.println("ROW NUMBERS : " + rows.size());
+
+        List<RDV> rdvs = getRDVs(rows);
 
         return rdvs;
     }
@@ -35,7 +40,7 @@ public class ExcelParser {
         for (Row row : rows) {
             RDV rdv = new RDV();
 
-            if (row.getRowNum() == 0) {
+            if (row.getRowNum() == 0 || row.getRowNum() == 1) {
                 continue;
             }
 
@@ -45,6 +50,9 @@ public class ExcelParser {
             for (Cell cell : row) {
                 addCellToRDV(rdv, cell, cellAsString, df);
             }
+
+//            if (rdv.getFirstName() == null || rdv.getFirstName().isEmpty())
+
             rdvs.add(rdv);
         }
 
@@ -53,100 +61,140 @@ public class ExcelParser {
 
     private void addCellToRDV(RDV rdv, Cell cell, String cellAsString, DataFormatter df) {
         switch (cell.getAddress().toString().charAt(0)) {
-            case 'A':
-                if (cell.getCellType().toString().equals("STRING")) {
-                    rdv.setFirstName(cell.getStringCellValue());
-                    break;
-                } else {
-                    throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
-                }
-
-            case 'B' :
+            case 'A' :
                 if (cell.getCellType().toString().equals("STRING")) {
                     rdv.setLastName(cell.getStringCellValue());
                     break;
                 } else {
-                    throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                }
+
+            case 'B' :
+                if (cell.getCellType().toString().equals("STRING")) {
+                    rdv.setFirstName(cell.getStringCellValue());
+                    break;
+                } else {
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
                 }
 
             case 'C' :
-                if (cell.getCellType().toString().equals("STRING")) {
-                    rdv.setAddress1(cell.getStringCellValue());
-                    break;
+                if (cell.getCellType().toString().equals("STRING") && cell.getStringCellValue().contains("/")) {
+
+                    String numberAsString = cell.getStringCellValue();
+                    numberAsString = numberAsString.replaceAll("/", "");
+                    numberAsString = numberAsString.replaceAll(" ", "");
+
+                    if (numberAsString.length() == 10 && numberAsString.matches("[0-9]+")) {
+                        int phoneNumber = Integer.parseInt(numberAsString);
+                        rdv.setPhoneNumber(phoneNumber);
+                        break;
+                    } else {
+                        throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                    }
                 } else {
-                    throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
                 }
 
             case 'D' :
-                if (cell.getCellType().toString().equals("NUMERIC")) {
-                    cellAsString = df.formatCellValue(cell);
-                    rdv.setAddress2(cellAsString);
+                if (cell.getCellType().toString().equals("STRING") && cell.toString().contains("@")) {
+                    rdv.setMail(cell.getStringCellValue());
                     break;
-                } else if ((cell.getCellType().toString().equals("STRING"))) {
-                    rdv.setAddress2(cell.getStringCellValue());
+                } else if (cell.getCellType().toString().equals("BLANK")) {
+                    rdv.setMail("");
                     break;
                 } else {
-                    throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
                 }
 
-            case 'E' : if (cell.getCellType().toString().equals("STRING")) {
-                rdv.setAddress3(cell.toString());
-                break;
-            } else {
-                throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
-            }
+            case 'E' :
+                if (cell.getCellType().toString().equals("STRING") && cell.toString().length() == 10 && cell.toString().charAt(2) == '/' && cell.toString().charAt(5) == '/') {
 
-            case 'F' :
-                if (cell.getCellType().toString().equals("NUMERIC")) {
-                    cellAsString = df.formatCellValue(cell);
-                    if (cellAsString.length() == 10) {
-                        rdv.setPhoneNumber(cellAsString);
+                    String dateAsString = cell.getStringCellValue();
+                    dateAsString = dateAsString.replaceAll("/", "");
+
+                    if (dateAsString.length() == 8 && dateAsString.matches("[0-9]+")) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+                        LocalDate localDate = LocalDate.parse(dateAsString, formatter);
+                        rdv.setLetterSentDate(localDate);
                         break;
                     } else {
-                        throw new ClassCastException("Wrong data in cell " + cell.getAddress());
+                        throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
                     }
-                } else if (cell.getCellType().toString().equals("STRING") && cell.toString().contains(".")) {
-                    cellAsString = cell.getStringCellValue();
-                    cellAsString = cellAsString.replaceAll("\\.", "");
-                    rdv.setPhoneNumber(cellAsString);
-                    break;
-                } else if (cell.getCellType().toString().equals("STRING") && cell.toString().contains(" ")) {
-                    cellAsString = cell.getStringCellValue();
-                    cellAsString = cellAsString.replaceAll(" ", "");
-                    rdv.setPhoneNumber(cellAsString);
-                    break;
                 } else {
-                    throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
                 }
 
-            case 'G' : if (cell.getCellType().toString().equals("STRING") && cell.getStringCellValue().contains("@")) {
-                rdv.setMail(cell.getStringCellValue());
-                break;
-            } else {
-                throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
-            }
+            case 'F' :
+                if (cell.getCellType().toString().equals("STRING") && cell.toString().length() == 10 && cell.toString().charAt(2) == '/' && cell.toString().charAt(5) == '/') {
+
+                    String dateAsString = cell.getStringCellValue();
+                    dateAsString = dateAsString.replaceAll("/", "");
+
+                    if (dateAsString.length() == 8 && dateAsString.matches("[0-9]+")) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+                        LocalDate localDate = LocalDate.parse(dateAsString, formatter);
+                        rdv.setRDVDate(localDate);
+                        break;
+                    } else {
+                        throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                    }
+                } else {
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                }
+
+            case 'G' :
+                if (cell.getCellType().toString().equals("STRING") && cell.toString().length() == 5 && cell.toString().charAt(2) == 'h') {
+
+                    String timeAsString = cell.getStringCellValue();
+                    timeAsString = timeAsString.replaceAll("h", "");
+
+                    if (timeAsString.length() == 4 && timeAsString.matches("[0-9]+")) {
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmm");
+                        LocalTime localTime = LocalTime.parse(timeAsString, formatter);
+                        rdv.setRDVTime(localTime);
+                        break;
+                    } else {
+                        throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                    }
+                } else {
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                }
 
             case 'H' :
-                if (cell.getCellType().toString().equals("STRING") && cell.getStringCellValue().contains("/")) {
-                    rdv.setRDVDate(cell.toString());
+                if (cell.getCellType().toString().equals("STRING")) {
+                    rdv.setRDVLocation(cell.getStringCellValue());
                     break;
                 } else {
-                    throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
                 }
 
-            case 'I' : if (cell.getCellType().toString().equals("STRING") && cell.getStringCellValue().contains("h")) {
-                rdv.setRDVTime(cell.toString());
-                break;
-            } else {
-                throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
-            }
+            case 'I' :
+                if (cell.getCellType().toString().equals("STRING")) {
+                    rdv.setReferentName(cell.getStringCellValue());
+                    break;
+                }  else if (cell.getCellType().toString().equals("BLANK")) {
+                    rdv.setReferentName("votre référent");
+                    break;
+                } else {
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                }
 
-            case 'J' : if (cell.getCellType().toString().equals("STRING")) {
-                rdv.setRDVLocation(cell.toString());
-                break;
-            } else {
-                throw new ClassCastException("Wrong data type/format in cell " + cell.getAddress());
-            }
+            case 'J' :
+                if (cell.getCellType().toString().equals("STRING") && cell.toString().length() <= 4) {
+
+                    if (cell.toString().toUpperCase(Locale.ROOT).contains("IND")) {
+                        rdv.setRDVType("IND");
+                        break;
+                    } else if (cell.toString().toUpperCase(Locale.ROOT).contains("COLL")) {
+                        rdv.setRDVType("COLL");
+                        break;
+                    } else {
+                        throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                    }
+                } else {
+                    throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());
+                }
+
         }
     }
 
@@ -177,8 +225,6 @@ public class ExcelParser {
             throw new FileNotFoundException("No sheets found in workbook(s) " + workbooks);
         }
 
-        System.out.println("Found sheets are : " + sheets);
-
         return sheets;
     }
 
@@ -192,8 +238,6 @@ public class ExcelParser {
         if (workbooks.isEmpty()) {
             throw new FileNotFoundException("No workbooks found in file(s) " + files);
         }
-
-        System.out.println("Found workbooks are : " + workbooks);
 
         return workbooks;
     }
@@ -209,8 +253,6 @@ public class ExcelParser {
         if (files.isEmpty()) {
             throw new FileNotFoundException("No .xlsx files found at path " + Path.of(WORKING_DIR).toAbsolutePath());
         }
-
-        System.out.println("Found files are : " + files);
 
         return files;
     }

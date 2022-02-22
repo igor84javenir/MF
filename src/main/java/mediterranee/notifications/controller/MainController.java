@@ -108,12 +108,19 @@ public class MainController {
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             ExcelParser excelParser = new ExcelParser();
             List<RDV> rdvs = excelParser.getParsedFiles();
-        } catch (IOException e) {
+
+            System.out.println(rdvs);
+
+        } catch (Exception e) {
             e.printStackTrace();
 
             // return error response
             flash = "Le fichier '" + fileName + "' est vide soit erroné!";
             flashType = "danger";
+
+            if (e instanceof ClassCastException) {
+                flash = flash + " " + e.getMessage();
+            }
 
             Files.delete(Path.of(WORKING_DIR + "/" + fileName));
 
@@ -132,16 +139,6 @@ public class MainController {
 
         return "redirect:/";
     }
-
-//    @GetMapping("/download/{fileName}")
-//    @ResponseBody
-//    public File downloadFile(@PathVariable("fileName") String fileName) {
-//        final File file = new File(WORKING_DIR + "/" + fileName);
-//
-//        System.out.println("MY FILE IS : " + file);
-//
-//        return file;
-//    }
 
     @RequestMapping("/download/{fileName}")
     public ResponseEntity<InputStreamResource> downloadTextFileExample1(@PathVariable("fileName") String fileName) throws FileNotFoundException {
