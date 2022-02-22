@@ -60,14 +60,14 @@ public class ExcelParser {
                     && rdv.getLetterSentDate() == null
                     && rdv.getRDVDate() == null
                     && rdv.getRDVTime() == null
-                    && rdv.getRDVLocation() == null
-                    && rdv.getReferentName() == null
-                    && rdv.getRDVType() == null) {
+                    && (rdv.getRDVLocation() == null || rdv.getRDVLocation().isBlank())
+                    && (rdv.getReferentName() == null || rdv.getReferentName().isBlank())
+                    && (rdv.getRDVType() == null || rdv.getRDVType().isBlank())) {
                 break;
             }
 
-            if (rdv.getLastName() == null
-                || )
+//            if (rdv.getLastName() == null
+//                || )
 
             rdvs.add(rdv);
         }
