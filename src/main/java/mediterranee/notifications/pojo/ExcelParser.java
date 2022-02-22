@@ -51,7 +51,7 @@ public class ExcelParser {
 
             if ((rdv.getLastName() == null || rdv.getLastName().isBlank())
                     && (rdv.getFirstName() == null || rdv.getFirstName().isBlank())
-                    && rdv.getPhoneNumber() == null
+                    && (rdv.getPhoneNumber() == null || rdv.getPhoneNumber().isBlank())
                     && (rdv.getMail() == null || rdv.getMail().isBlank())
                     && rdv.getLetterSentDate() == null
                     && rdv.getRDVDate() == null
@@ -64,7 +64,7 @@ public class ExcelParser {
 
             if ((rdv.getLastName() == null || rdv.getLastName().isBlank())
                     || (rdv.getFirstName() == null || rdv.getFirstName().isBlank())
-                    || rdv.getPhoneNumber() == null
+                    || (rdv.getPhoneNumber() == null || rdv.getPhoneNumber().isBlank())
                     || rdv.getLetterSentDate() == null
                     || rdv.getRDVDate() == null
                     || rdv.getRDVTime() == null
@@ -115,8 +115,8 @@ public class ExcelParser {
                     numberAsString = numberAsString.replaceAll(" ", "");
 
                     if (numberAsString.length() == 10 && numberAsString.matches("[0-9]+")) {
-                        int phoneNumber = Integer.parseInt(numberAsString);
-                        rdv.setPhoneNumber(phoneNumber);
+                        numberAsString = "+33" + numberAsString.substring(1);
+                        rdv.setPhoneNumber(numberAsString);
                         break;
                     } else {
                         throw new ClassCastException("Type / format de données non valide dans la cellule " + cell.getAddress());

@@ -14,7 +14,7 @@ public class RDV {
 
     private String lastName;
     private String firstName;
-    private Integer phoneNumber;
+    private String phoneNumber;
     private String mail;
     private LocalDate letterSentDate;
     private LocalDate RDVDate;
