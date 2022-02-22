@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @Controller
 public class MainController {
@@ -115,7 +116,7 @@ public class MainController {
             flash = "Le fichier '" + fileName + "' est vide soit erroné!";
             flashType = "danger";
 
-            if (e instanceof ClassCastException) {
+            if (e instanceof ClassCastException || e instanceof NoSuchElementException) {
                 flash = flash + " " + e.getMessage();
             }
 

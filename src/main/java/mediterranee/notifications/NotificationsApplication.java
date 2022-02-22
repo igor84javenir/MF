@@ -17,11 +17,11 @@ public class NotificationsApplication {
 		SpringApplication.run(NotificationsApplication.class, args);
 	}
 
-	@EventListener(ApplicationReadyEvent.class)
-	public void SendMail(){
-		senderService.sendEmail("amine-finance@hotmail.com",
-				"Votre rendez_vous à mediterranée formation",
-				"veuillez vous présenter le 25/03/2022 à medfo à 12h45");
-	}
+//	@EventListener(ApplicationReadyEvent.class)
+//	public void SendMail(){
+//		senderService.sendEmail("amine-finance@hotmail.com",
+//				"Votre rendez_vous à mediterranée formation",
+//				"veuillez vous présenter le 25/03/2022 à medfo à 12h45");
+//	}
 
 }

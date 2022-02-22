@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 import static mediterranee.notifications.controller.MainController.WORKING_DIR;
 
@@ -26,9 +27,6 @@ public class ExcelParser {
         List<Workbook> workbooks = generateWorkbooksFromFiles(files);
         List<Sheet> sheets = getSheetsFromWorkbooks(workbooks);
         List<Row> rows = getRowsFromSheets(sheets);
-
-        System.out.println("ROW NUMBERS : " + rows.size());
-
         List<RDV> rdvs = getRDVs(rows);
 
         return rdvs;
@@ -48,8 +46,6 @@ public class ExcelParser {
             String cellAsString = "";
 
             for (Cell cell : row) {
-                System.out.println("Cell is : " + cell.getAddress());
-
                 addCellToRDV(rdv, cell, cellAsString, df);
             }
 
@@ -66,8 +62,26 @@ public class ExcelParser {
                 break;
             }
 
-//            if (rdv.getLastName() == null
-//                || )
+            if ((rdv.getLastName() == null || rdv.getLastName().isBlank())
+                    || (rdv.getFirstName() == null || rdv.getFirstName().isBlank())
+                    || rdv.getPhoneNumber() == null
+                    || rdv.getLetterSentDate() == null
+                    || rdv.getRDVDate() == null
+                    || rdv.getRDVTime() == null
+                    || (rdv.getRDVLocation() == null || rdv.getRDVLocation().isBlank())
+                    || (rdv.getRDVType() == null || rdv.getRDVType().isBlank())) {
+                throw new NoSuchElementException("Type / format de données non valide dans la ligne " + (row.getRowNum() + 1));
+            }
+
+            //TODO automatic fill referent name confirmation
+            if (rdv.getReferentName() == null || rdv.getReferentName().isBlank()) {
+                rdv.setReferentName("votre référent");
+            }
+
+            //TODO automatic fill referent name confirmation
+            if (rdv.getMail() == null || rdv.getMail().isBlank()) {
+                rdv.setMail("not specified");
+            }
 
             rdvs.add(rdv);
         }
@@ -189,6 +203,7 @@ public class ExcelParser {
                     rdv.setReferentName(cell.getStringCellValue());
                     break;
                 }  else if (cell.getCellType().toString().equals("BLANK")) {
+                    //TODO automatic fill referent name confirmation
                     rdv.setReferentName("votre référent");
                     break;
                 } else {
