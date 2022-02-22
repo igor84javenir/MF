@@ -5,9 +5,6 @@ import mediterranee.notifications.pojo.ExcelParser;
 import mediterranee.notifications.model.SourceFileDetails;
 import mediterranee.notifications.pojo.WorkDirectoryScanner;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFFactory;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -107,7 +104,7 @@ public class MainController {
             Path path = Paths.get(WORKING_DIR + "/" + fileName);
             Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
             ExcelParser excelParser = new ExcelParser();
-            List<RDV> rdvs = excelParser.getParsedFiles();
+            List<RDV> rdvs = excelParser.getRDVsFromExcelFile();
 
             System.out.println(rdvs);
 

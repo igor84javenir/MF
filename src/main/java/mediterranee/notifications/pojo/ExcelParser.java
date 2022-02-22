@@ -20,7 +20,7 @@ import static mediterranee.notifications.controller.MainController.WORKING_DIR;
 
 public class ExcelParser {
 
-    public List<RDV> getParsedFiles() throws IOException, InvalidFormatException {
+    public List<RDV> getRDVsFromExcelFile() throws IOException, InvalidFormatException {
         final File folder = new File(WORKING_DIR);
         List<File> files = getFilesInFolder(folder);
         List<Workbook> workbooks = generateWorkbooksFromFiles(files);
